@@ -1,0 +1,8 @@
+framework module ExpoSettings {
+  umbrella header "ExpoSettings.h"
+  
+  export *
+  module * { export * }
+  
+  link framework "MarkdownUI"
+}

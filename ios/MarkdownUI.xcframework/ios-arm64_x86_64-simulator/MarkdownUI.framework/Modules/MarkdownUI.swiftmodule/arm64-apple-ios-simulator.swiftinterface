@@ -2,8 +2,9 @@
 // swift-compiler-version: Apple Swift version 6.0 effective-5.10 (swiftlang-6.0.0.9.10 clang-1600.0.26.2)
 // swift-module-flags: -target arm64-apple-ios15.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-bare-slash-regex -module-name MarkdownUI
 // swift-module-flags-ignorable: -no-verify-emitted-module-interface
+import CoreGraphics
 import Foundation
-import NetworkImage
+import ImageIO
 import Swift
 import SwiftUI
 import _Concurrency
@@ -314,6 +315,77 @@ public protocol ImageProvider {
 }
 public protocol InlineImageProvider {
   func image(with url: Foundation.URL, label: Swift.String) async throws -> SwiftUICore.Image
+}
+@_Concurrency.MainActor @preconcurrency public struct NetworkImage<Content> : SwiftUICore.View where Content : SwiftUICore.View {
+  @_Concurrency.MainActor @preconcurrency public init(url: Foundation.URL?, scale: CoreFoundation.CGFloat = 1) where Content == MarkdownUI._OptionalContent<SwiftUICore.Image>
+  @_Concurrency.MainActor @preconcurrency public init<I>(url: Foundation.URL?, scale: CoreFoundation.CGFloat = 1, transaction: SwiftUICore.Transaction = .init(), @SwiftUICore.ViewBuilder content: @escaping (SwiftUICore.Image) -> I) where Content == MarkdownUI._OptionalContent<I>, I : SwiftUICore.View
+  @_Concurrency.MainActor @preconcurrency public init<I, P>(url: Foundation.URL?, scale: CoreFoundation.CGFloat = 1, transaction: SwiftUICore.Transaction = .init(), @SwiftUICore.ViewBuilder content: @escaping (SwiftUICore.Image) -> I, @SwiftUICore.ViewBuilder placeholder: @escaping () -> P) where Content == SwiftUICore._ConditionalContent<I, P>, I : SwiftUICore.View, P : SwiftUICore.View
+  @_Concurrency.MainActor @preconcurrency public init(url: Foundation.URL?, scale: CoreFoundation.CGFloat = 1, transaction: SwiftUICore.Transaction = .init(), @SwiftUICore.ViewBuilder content: @escaping (MarkdownUI.NetworkImageState) -> Content)
+  @_Concurrency.MainActor @preconcurrency public var body: some SwiftUICore.View {
+    get
+  }
+  @available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
+  public typealias Body = @_opaqueReturnTypeOf("$s10MarkdownUI12NetworkImageV4bodyQrvp", 0) __<Content>
+}
+@_Concurrency.MainActor @preconcurrency public struct _OptionalContent<Content> : SwiftUICore.View where Content : SwiftUICore.View {
+  @_Concurrency.MainActor @preconcurrency public var body: some SwiftUICore.View {
+    get
+  }
+  @available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
+  public typealias Body = @_opaqueReturnTypeOf("$s10MarkdownUI16_OptionalContentV4bodyQrvp", 0) __<Content>
+}
+extension MarkdownUI.NetworkImage {
+  @available(*, deprecated, message: "Use the initializer that takes a content closure receiving a 'NetworkImageState' value.")
+  @_Concurrency.MainActor @preconcurrency public init<P, I, F>(url: Foundation.URL?, scale: CoreFoundation.CGFloat = 1, transaction: SwiftUICore.Transaction = .init(), @SwiftUICore.ViewBuilder content: @escaping (SwiftUICore.Image) -> I, @SwiftUICore.ViewBuilder placeholder: @escaping () -> P, @SwiftUICore.ViewBuilder fallback: @escaping () -> F) where Content == SwiftUICore._ConditionalContent<SwiftUICore._ConditionalContent<P, I>, F>, P : SwiftUICore.View, I : SwiftUICore.View, F : SwiftUICore.View
+}
+public protocol NetworkImageCache : AnyObject {
+  func image(for url: Foundation.URL) -> CoreGraphics.CGImage?
+  func setImage(_ image: CoreGraphics.CGImage, for url: Foundation.URL)
+}
+public class DefaultNetworkImageCache {
+  public init(countLimit: Swift.Int = 0)
+  public static let shared: MarkdownUI.DefaultNetworkImageCache
+  @objc deinit
+}
+extension MarkdownUI.DefaultNetworkImageCache : MarkdownUI.NetworkImageCache, @unchecked Swift.Sendable {
+  public func image(for url: Foundation.URL) -> CoreGraphics.CGImage?
+  public func setImage(_ image: CoreGraphics.CGImage, for url: Foundation.URL)
+}
+public protocol NetworkImageLoader : AnyObject, Swift.Sendable {
+  func image(from url: Foundation.URL) async throws -> CoreGraphics.CGImage
+}
+@_hasMissingDesignatedInitializers public actor DefaultNetworkImageLoader {
+  public convenience init(cache: any MarkdownUI.NetworkImageCache, session: Foundation.URLSession)
+  public static let shared: MarkdownUI.DefaultNetworkImageLoader
+  @objc deinit
+  @available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
+  @_semantics("defaultActor") nonisolated final public var unownedExecutor: _Concurrency.UnownedSerialExecutor {
+    get
+  }
+}
+extension MarkdownUI.DefaultNetworkImageLoader : MarkdownUI.NetworkImageLoader {
+  public func image(from url: Foundation.URL) async throws -> CoreGraphics.CGImage
+}
+extension MarkdownUI.NetworkImageLoader where Self == MarkdownUI.DefaultNetworkImageLoader {
+  public static var `default`: MarkdownUI.DefaultNetworkImageLoader {
+    get
+  }
+}
+public enum NetworkImageState : Swift.Equatable {
+  case empty
+  case success(image: SwiftUICore.Image, idealSize: CoreFoundation.CGSize)
+  case failure
+  public var image: SwiftUICore.Image? {
+    get
+  }
+  public static func == (a: MarkdownUI.NetworkImageState, b: MarkdownUI.NetworkImageState) -> Swift.Bool
+}
+extension Foundation.URLSession {
+  public static func imageLoading(memoryCapacity: Swift.Int, diskCapacity: Swift.Int, timeoutInterval: Foundation.TimeInterval) -> Foundation.URLSession
+}
+extension SwiftUICore.View {
+  @_Concurrency.MainActor @preconcurrency public func networkImageLoader<T>(_ networkImageLoader: T) -> some SwiftUICore.View where T : MarkdownUI.NetworkImageLoader
+  
 }
 public struct BlockConfiguration {
   @_Concurrency.MainActor @preconcurrency public struct Label : SwiftUICore.View {
@@ -977,6 +1049,8 @@ extension MarkdownUI.TextTableColumnAlignment : Swift.Sendable {}
 extension MarkdownUI.TextTableColumnAlignment : Swift.BitwiseCopyable {}
 extension MarkdownUI.SoftBreak.Mode : Swift.Equatable {}
 extension MarkdownUI.SoftBreak.Mode : Swift.Hashable {}
+extension MarkdownUI.NetworkImage : Swift.Sendable {}
+extension MarkdownUI._OptionalContent : Swift.Sendable {}
 extension MarkdownUI.BlockConfiguration.Label : Swift.Sendable {}
 extension MarkdownUI.CodeBlockConfiguration.Label : Swift.Sendable {}
 extension MarkdownUI.TableCellConfiguration.Label : Swift.Sendable {}
