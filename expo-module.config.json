@@ -1,0 +1,16 @@
+{
+  "platforms": [
+    "apple",
+    "android"
+  ],
+  "apple": {
+    "modules": [
+      "ExpoSettingsModule"
+    ]
+  },
+  "android": {
+    "modules": [
+      "expo.modules.settings.ExpoSettingsModule"
+    ]
+  }
+}
